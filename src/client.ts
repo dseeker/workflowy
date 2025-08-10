@@ -168,7 +168,7 @@ export class Client {
     const loginResult = LoginResultSchema.parse(loginResponse);
 
     if (!loginResult.success) {
-      throw Error(`WorkFlowy login error: ${loginResult.errors.join(", ")}`);
+      throw Error(`WorkFlowy login error: ${loginResult.errors}`);
     }
 
     const cookies = getSetCookies(response.headers);
