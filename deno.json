@@ -1,6 +1,6 @@
 {
   "name": "@workflowy/workflowy",
-  "version": "2.8.1",
+  "version": "2.8.2",
   "exports": "./mod.ts",
   "lock": false
 }
