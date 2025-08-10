@@ -1,7 +1,7 @@
 /**
  * This script builds the NPM package from Deno source
  */
-import { build, emptyDir } from "jsr:@deno/dnt@^0.42.1";
+import { build, emptyDir } from "jsr:@deno/dnt@^0.42.3";
 
 await emptyDir("./npm");
 
@@ -10,12 +10,11 @@ await build({
   outDir: "./npm",
   shims: {
     deno: "dev",
-    weakRef: "dev",
-    undici: true,
+    //undici: true,
     crypto: true,
   },
   compilerOptions: {
-    lib: ["ES2023"],
+    lib: ["ESNext"],
     target: "ES2022",
   },
   package: {
