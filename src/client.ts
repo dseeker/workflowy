@@ -249,7 +249,7 @@ export class Client {
   ): Promise<OperationResult> {
     const operationMap = Array.isArray(operations)
       ? { Root: operations }
-      : operations;
+      : { Root: [], ...operations } as Record<string, Operation[]>;
     const initializationData = await this.getInitializationData();
     const time = Math.floor(Date.now() / 1000);
     const timestamp = time -
