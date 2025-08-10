@@ -1,3 +1,3 @@
-export { getSetCookies, setCookie } from "jsr:@std/http@^1.0.0/cookie";
+export { getSetCookies, setCookie } from "jsr:@std/http@^1.0.20/cookie";
 
-export { z } from "npm:zod@^3.10.0";
+export { z } from "npm:zod@^4";

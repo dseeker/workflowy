@@ -4,12 +4,10 @@ export const ROOT = "Root";
 
 export const LoginResultSchema = z.object({
   success: z.boolean().optional(),
-  errors: z.object({
-    __all__: z.array(z.string()),
-  }).optional(),
+  errors: z.object().optional(),
 }).transform((i) => ({
   success: i.success === true,
-  errors: i.errors?.__all__ || [],
+  errors: JSON.stringify(i.errors),
 }));
 
 export type LoginResult = z.infer<typeof LoginResultSchema>;
@@ -84,7 +82,7 @@ export const TreeDataSchema = z.object({
       shareId: i.as,
     })),
   ),
-  shared_projects: z.record(TreeItemShareInfoSchema),
+  shared_projects: z.record(z.string(), TreeItemShareInfoSchema),
   server_expanded_projects_list: z.array(z.string()).default([]),
 });
 
