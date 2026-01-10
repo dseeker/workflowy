@@ -103,8 +103,6 @@ Deno.test("WorkFlowy Export / To JSON with dates", () => {
 
   const json = document.root.toJson(true);
 
-  console.log(json);
-
   assert(Object.hasOwn(json, "createdAt"));
   assert(Object.hasOwn(json, "lastModifiedAt"));
   assert(Object.hasOwn(json, "completedAt"));
