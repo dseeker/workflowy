@@ -92,7 +92,7 @@ Deno.test("WorkFlowy Document / Create list", () => {
     type: "create",
     data: {
       projectid: list.id,
-      parentid: ROOT,
+      parentid: "None",
       priority: 1,
     },
   });

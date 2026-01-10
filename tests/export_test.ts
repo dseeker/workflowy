@@ -5,7 +5,7 @@ import mockTreeData from "./mocks/get_tree_data_extended.json" with {
   type: "json",
 };
 
-import { assertEquals, assertObjectMatch } from "./test_deps.ts";
+import { assert, assertEquals, assertObjectMatch } from "./test_deps.ts";
 
 import { Document } from "../src/document.ts";
 import type { Client } from "../src/client.ts";
@@ -86,6 +86,28 @@ Deno.test("WorkFlowy Export / To JSON partial", () => {
   const expected = JSON.parse(readFile("./mocks/export_json_partial.json"));
 
   assertObjectMatch(json, expected);
+});
+
+Deno.test("WorkFlowy Export / To JSON without dates", () => {
+  const document = mockDocument();
+
+  const json = document.root.items[0].toJson(false);
+
+  assert(Object.hasOwn(json, "createdAt") === false);
+  assert(Object.hasOwn(json, "lastModifiedAt") === false);
+  assert(Object.hasOwn(json, "completedAt") === false);
+});
+
+Deno.test("WorkFlowy Export / To JSON with dates", () => {
+  const document = mockDocument();
+
+  const json = document.root.toJson(true);
+
+  console.log(json);
+
+  assert(Object.hasOwn(json, "createdAt"));
+  assert(Object.hasOwn(json, "lastModifiedAt"));
+  assert(Object.hasOwn(json, "completedAt"));
 });
 
 Deno.test("WorkFlowy Export / To OPML all", () => {

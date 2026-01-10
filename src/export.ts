@@ -64,16 +64,22 @@ export function toPlainText(
 }
 
 // deno-lint-ignore no-explicit-any
-export function toJson(list: List): any {
+export function toJson(list: List, includeDates = false): any {
+  const dates = includeDates
+    ? {
+      createdAt: list.createdAt?.toISOString(),
+      lastModifiedAt: list.lastModifiedAt?.toISOString(),
+      completedAt: list.completedAt?.toISOString(),
+    }
+    : {};
+
   return {
     id: list.id,
     name: list.name,
     note: list.note,
     isCompleted: list.isCompleted,
-    createdAt: list.createdAt?.toISOString(),
-    lastModifiedAt: list.lastModifiedAt?.toISOString(),
-    completedAt: list.completedAt?.toISOString(),
-    items: list.items.map((sublist) => toJson(sublist)),
+    ...dates,
+    items: list.items.map((sublist) => toJson(sublist, includeDates)),
   };
 }
 

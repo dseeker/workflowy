@@ -411,6 +411,7 @@ export class List {
       note: undefined,
       parentId: this.id,
       priority: 0, // there is some special algo in WF
+      created: this.#companion.getNow(),
       completed: undefined,
       lastModified: this.#companion.getNow(),
       originalId: undefined,
@@ -715,11 +716,12 @@ export class List {
   /**
    * Prints the list and its content in JSON format
    *
+   * @param includeDates Whether to include creation, modification, and completion dates
    * @returns list in JSON format
    */
   // deno-lint-ignore no-explicit-any
-  public toJson(): any {
-    return toJson(this);
+  public toJson(includeDates = false): any {
+    return toJson(this, includeDates);
   }
 
   /**
