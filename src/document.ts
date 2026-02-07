@@ -276,6 +276,20 @@ export class List {
     return this.data.note || "";
   }
 
+  /** S3 file attachment metadata, or undefined if no file attached */
+  public get s3File(): { 
+    isFile: boolean;
+    fileName: string;
+    fileType: string;
+    objectFolder: string;
+    isAnimatedGIF?: boolean;
+    imageOriginalWidth?: number;
+    imageOriginalHeight?: number;
+    imageOriginalPixels?: number;
+  } | undefined {
+    return this.data.s3File;
+  }
+
   /** Date of creation, or undefined if not available */
   public get createdAt(): Date | undefined {
     if (this.data.created !== undefined) {
@@ -417,6 +431,7 @@ export class List {
       originalId: undefined,
       isMirrorRoot: false,
       shareId: undefined,
+      s3File: undefined,
       children: [],
       treeId: this.data.treeId,
     });

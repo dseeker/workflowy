@@ -27,7 +27,7 @@ Deno.test("WorkFlowy Document / Load tree", () => {
 
   const home = document.root;
   assertEquals(home.id, ROOT);
-  assertEquals(home.items.length, 7);
+  assertEquals(home.items.length, 8);
 
   assertEquals(home.items[0].name, "List with sublist");
   assertEquals(home.items[0].items[0].name, "One");
@@ -67,6 +67,13 @@ Deno.test("WorkFlowy Document / Load tree", () => {
   );
   assertEquals(home.items[6].sharedUrlPermissionLevel, PermissionLevel.View);
   assertEquals(home.items[6].isCompleted, false);
+
+  assertEquals(home.items[7].name, "List with file attachment");
+  assertEquals(home.items[7].s3File?.isFile, true);
+  assertEquals(home.items[7].s3File?.fileName, "screenshot.png");
+  assertEquals(home.items[7].s3File?.fileType, "image/png");
+  assertEquals(home.items[7].s3File?.imageOriginalWidth, 1920);
+  assertEquals(home.items[7].s3File?.imageOriginalHeight, 1080);
 });
 
 Deno.test("WorkFlowy Document / Get list by short ID", () => {
@@ -84,7 +91,7 @@ Deno.test("WorkFlowy Document / Create list", () => {
 
   assertEquals(list.parent.id, ROOT);
   assertEquals(list.priority, 1);
-  assertEquals(document.root.itemIds.length, 8);
+  assertEquals(document.root.itemIds.length, 9);
 
   const ops = document.getPendingOperations()[ROOT];
   assertEquals(ops.length, 1);
@@ -238,12 +245,12 @@ Deno.test("WorkFlowy Document / Delete list", () => {
 
   const list = document.root.items[1];
 
-  assertEquals(document.root.items.length, 7);
+  assertEquals(document.root.items.length, 8);
   assertEquals(document.root.items[1].name, "List with description");
 
   list.delete();
 
-  assertEquals(document.root.items.length, 6);
+  assertEquals(document.root.items.length, 7);
   assertEquals(document.root.items[1].name, "List completed");
 
   const ops = document.getPendingOperations()[ROOT];
@@ -450,4 +457,28 @@ Deno.test("WorkFlowy Document / Collapse list", () => {
   assertEquals(expandedDeltas.size, 1);
   assertEquals(expandedDeltas.has("de843e0e"), true);
   assertEquals(expandedDeltas.get("de843e0e"), false);
+});
+
+Deno.test("WorkFlowy Document / s3File attachment", () => {
+  const document = mockDocument();
+
+  const list = document.getList("b1c2d3e4-f5a6-7890-abcd-ef1234567890");
+
+  assertEquals(list.name, "List with file attachment");
+  assertEquals(list.s3File?.isFile, true);
+  assertEquals(list.s3File?.fileName, "screenshot.png");
+  assertEquals(list.s3File?.fileType, "image/png");
+  assertEquals(list.s3File?.objectFolder, "ab/cd/ef");
+  assertEquals(list.s3File?.isAnimatedGIF, false);
+  assertEquals(list.s3File?.imageOriginalWidth, 1920);
+  assertEquals(list.s3File?.imageOriginalHeight, 1080);
+  assertEquals(list.s3File?.imageOriginalPixels, 2073600);
+});
+
+Deno.test("WorkFlowy Document / s3File attachment missing", () => {
+  const document = mockDocument();
+
+  const list = document.root.items[0];
+
+  assertEquals(list.s3File, undefined);
 });

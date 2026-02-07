@@ -10,6 +10,7 @@ programatically and perhaps create some new automations and integrations.
 - Export of lists to JSON or formatted plain text
 - Basic search of items in lists
 - Support for live copies (mirrors)
+- Downloading file attachments (images and other files)
 
 ## Basic usage
 
@@ -52,6 +53,7 @@ myList.name; // name of the list
 myList.note; // note of the list
 myList.isCompleted; // whether or not the list or item is completed
 myList.items; // items and sublists
+myList.s3File; // file attachment metadata (if present)
 ```
 
 ### Editing lists
@@ -73,6 +75,59 @@ if (document.isDirty()) {
   await document.save();
 }
 ```
+
+### Working with file attachments
+
+WorkFlowy supports attaching files and images to lists. The `s3File` property
+provides metadata about attached files:
+
+```typescript
+// Check if a list has a file attachment
+if (myList.s3File) {
+  console.log(myList.s3File.fileName);    // Original filename
+  console.log(myList.s3File.fileType);    // MIME type (e.g., "image/png")
+  console.log(myList.s3File.isFile);      // true if a file is attached
+  
+  // For images, dimensions are available
+  console.log(myList.s3File.imageOriginalWidth);
+  console.log(myList.s3File.imageOriginalHeight);
+}
+```
+
+### Downloading file attachments
+
+To download a file attachment, use the `getFileUrl()` method on the client:
+
+```typescript
+const workflowy = new WorkFlowy("your@email.com", "your-password");
+const document = await workflowy.getDocument();
+const client = workflowy.getClient();
+
+// Get initialization data to obtain userId
+const initData = await client.getInitializationData();
+const userId = initData.mainProjectTreeInfo.ownerId;
+
+// Find a list with a file attachment
+const listWithFile = document.findOne(/some pattern/);
+
+if (listWithFile?.s3File) {
+  // Get a signed URL for the file
+  // Parameters: userId, nodeId, maxWidth, maxHeight
+  const { url } = await client.getFileUrl(userId, listWithFile.id, 800, 800);
+  
+  // Download the file
+  const response = await fetch(url);
+  const buffer = await response.arrayBuffer();
+  
+  // Save or process the file
+  console.log(`Downloaded ${buffer.byteLength} bytes`);
+}
+```
+
+**Note:** The `getFileUrl()` method requires:
+- `userId`: Your WorkFlowy user ID (from initialization data)
+- `nodeId`: The ID of the list containing the file
+- `maxWidth` / `maxHeight`: Optional dimensions for image previews (default: 800x800)
 
 ## Installation
 

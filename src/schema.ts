@@ -4,7 +4,7 @@ export const ROOT = "Root";
 
 export const LoginResultSchema = z.object({
   success: z.boolean().optional(),
-  errors: z.object().optional(),
+  errors: z.any().optional(),
 }).transform((i) => ({
   success: i.success === true,
   errors: JSON.stringify(i.errors),
@@ -68,6 +68,16 @@ export const TreeDataSchema = z.object({
           originalId: z.string().optional(),
           isMirrorRoot: z.boolean().optional(),
         }).optional(),
+        s3File: z.object({
+          isFile: z.boolean(),
+          fileName: z.string(),
+          fileType: z.string(),
+          objectFolder: z.string(),
+          isAnimatedGIF: z.boolean().optional(),
+          imageOriginalWidth: z.number().optional(),
+          imageOriginalHeight: z.number().optional(),
+          imageOriginalPixels: z.number().optional(),
+        }).optional(),
       }),
       as: z.string().optional(),
     }).transform((i) => ({
@@ -82,6 +92,7 @@ export const TreeDataSchema = z.object({
       originalId: i.metadata?.mirror?.originalId,
       isMirrorRoot: i.metadata?.mirror?.isMirrorRoot === true,
       shareId: i.as,
+      s3File: i.metadata?.s3File,
     })),
   ),
   shared_projects: z.record(z.string(), TreeItemShareInfoSchema),

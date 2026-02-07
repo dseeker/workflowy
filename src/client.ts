@@ -236,6 +236,28 @@ export class Client {
   }
 
   /**
+   * Fetches a signed URL for a file attachment
+   * 
+   * Queries `workflowy.com/file-proxy/signed-preview/` endpoint
+   * @param userId The user ID
+   * @param nodeId The node ID containing the file
+   * @param maxWidth Maximum width for image preview (default: 800)
+   * @param maxHeight Maximum height for image preview (default: 800)
+   * @returns Object containing the signed URL for the file
+   */
+  public async getFileUrl(
+    userId: number | string,
+    nodeId: string,
+    maxWidth: number = 800,
+    maxHeight: number = 800,
+  ): Promise<{ url: string }> {
+    const dimensions = `${maxWidth}x${maxHeight}`;
+    const url = `${WORKFLOWY_URL}/file-proxy/signed-preview/${userId}/${nodeId}/${dimensions}/?attempt=1`;
+    const response = await this.#authenticatedFetch(url);
+    return response as { url: string };
+  }
+
+  /**
    * Applies a list of operations to WorkFlowy document
    *
    * Queries `workflowy.com/push_and_pull` endpoint

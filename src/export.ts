@@ -78,6 +78,7 @@ export function toJson(list: List, includeDates = false): any {
     name: list.name,
     note: list.note,
     isCompleted: list.isCompleted,
+    s3File: list.s3File,
     ...dates,
     items: list.items.map((sublist) => toJson(sublist, includeDates)),
   };
