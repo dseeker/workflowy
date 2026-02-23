@@ -4,7 +4,7 @@ export const ROOT = "Root";
 
 export const LoginResultSchema = z.object({
   success: z.boolean().optional(),
-  errors: z.any().optional(),
+  errors: z.object().optional(),
 }).transform((i) => ({
   success: i.success === true,
   errors: JSON.stringify(i.errors),
