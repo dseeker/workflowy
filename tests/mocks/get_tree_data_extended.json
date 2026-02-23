@@ -172,7 +172,6 @@
       "prnt": null,
       "metadata": {
         "s3File": {
-          "isFile": true,
           "fileName": "document.pdf",
           "fileType": "application/pdf",
           "objectFolder": "xy/zw/uv",

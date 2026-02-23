@@ -112,7 +112,6 @@
       "prnt": null,
       "metadata": {
         "s3File": {
-          "isFile": true,
           "fileName": "screenshot.png",
           "fileType": "image/png",
           "objectFolder": "ab/cd/ef",

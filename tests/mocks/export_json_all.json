@@ -59,8 +59,7 @@
     },
     {
       "name": "List with file attachment",
-      "s3File": {
-        "isFile": true,
+      "file": {
         "fileName": "document.pdf",
         "fileType": "application/pdf",
         "objectFolder": "xy/zw/uv",

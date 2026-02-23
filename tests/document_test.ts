@@ -69,11 +69,11 @@ Deno.test("WorkFlowy Document / Load tree", () => {
   assertEquals(home.items[6].isCompleted, false);
 
   assertEquals(home.items[7].name, "List with file attachment");
-  assertEquals(home.items[7].s3File?.isFile, true);
-  assertEquals(home.items[7].s3File?.fileName, "screenshot.png");
-  assertEquals(home.items[7].s3File?.fileType, "image/png");
-  assertEquals(home.items[7].s3File?.imageOriginalWidth, 1920);
-  assertEquals(home.items[7].s3File?.imageOriginalHeight, 1080);
+  assertEquals(home.items[7].hasFile, true);
+  assertEquals(home.items[7].file?.fileName, "screenshot.png");
+  assertEquals(home.items[7].file?.fileType, "image/png");
+  assertEquals(home.items[7].file?.imageOriginalWidth, 1920);
+  assertEquals(home.items[7].file?.imageOriginalHeight, 1080);
 });
 
 Deno.test("WorkFlowy Document / Get list by short ID", () => {
@@ -459,26 +459,109 @@ Deno.test("WorkFlowy Document / Collapse list", () => {
   assertEquals(expandedDeltas.get("de843e0e"), false);
 });
 
-Deno.test("WorkFlowy Document / s3File attachment", () => {
+Deno.test("WorkFlowy Document / file attachment", () => {
   const document = mockDocument();
 
   const list = document.getList("b1c2d3e4-f5a6-7890-abcd-ef1234567890");
 
   assertEquals(list.name, "List with file attachment");
-  assertEquals(list.s3File?.isFile, true);
-  assertEquals(list.s3File?.fileName, "screenshot.png");
-  assertEquals(list.s3File?.fileType, "image/png");
-  assertEquals(list.s3File?.objectFolder, "ab/cd/ef");
-  assertEquals(list.s3File?.isAnimatedGIF, false);
-  assertEquals(list.s3File?.imageOriginalWidth, 1920);
-  assertEquals(list.s3File?.imageOriginalHeight, 1080);
-  assertEquals(list.s3File?.imageOriginalPixels, 2073600);
+  assertEquals(list.hasFile, true);
+  assertEquals(list.file?.fileName, "screenshot.png");
+  assertEquals(list.file?.fileType, "image/png");
+  assertEquals(list.file?.objectFolder, "ab/cd/ef");
+  assertEquals(list.file?.isAnimatedGIF, false);
+  assertEquals(list.file?.imageOriginalWidth, 1920);
+  assertEquals(list.file?.imageOriginalHeight, 1080);
+  assertEquals(list.file?.imageOriginalPixels, 2073600);
 });
 
-Deno.test("WorkFlowy Document / s3File attachment missing", () => {
+Deno.test("WorkFlowy Document / file attachment missing", () => {
   const document = mockDocument();
 
   const list = document.root.items[0];
 
-  assertEquals(list.s3File, undefined);
+  assertEquals(list.hasFile, false);
+  assertEquals(list.file, undefined);
+});
+
+Deno.test("WorkFlowy Document / getPreviewUrl calls client correctly", async () => {
+  let calledWith: { userId: number; nodeId: string; maxWidth: number; maxHeight: number } | undefined;
+  
+  const mockClientWithFileMethods = () => ({
+    getFilePreviewUrl: (userId: number | string, nodeId: string, maxWidth: number, maxHeight: number) => {
+      calledWith = { userId: userId as number, nodeId, maxWidth, maxHeight };
+      return Promise.resolve("https://workflowy.com/preview-url");
+    },
+    getOriginalFileUrl: () => Promise.resolve("https://workflowy.com/original-url"),
+  } as unknown as Client);
+  
+  const document = new Document(
+    mockClientWithFileMethods(),
+    mockTree(),
+    mockInitialization(),
+  );
+  
+  const listWithFile = document.getList("b1c2d3e4-f5a6-7890-abcd-ef1234567890");
+  const url = await listWithFile.getPreviewUrl(1024, 768);
+  
+  assertEquals(url, "https://workflowy.com/preview-url");
+  assertEquals(calledWith, {
+    userId: 0, // from mock initialization data
+    nodeId: "b1c2d3e4-f5a6-7890-abcd-ef1234567890",
+    maxWidth: 1024,
+    maxHeight: 768,
+  });
+});
+
+Deno.test("WorkFlowy Document / getFileUrl calls client correctly", async () => {
+  let calledWith: { userId: number; nodeId: string } | undefined;
+  
+  const mockClientWithFileMethods = () => ({
+    getFilePreviewUrl: () => Promise.resolve(""),
+    getOriginalFileUrl: (userId: number | string, nodeId: string) => {
+      calledWith = { userId: userId as number, nodeId };
+      return Promise.resolve("https://workflowy.com/original-url");
+    },
+  } as unknown as Client);
+  
+  const document = new Document(
+    mockClientWithFileMethods(),
+    mockTree(),
+    mockInitialization(),
+  );
+  
+  const listWithFile = document.getList("b1c2d3e4-f5a6-7890-abcd-ef1234567890");
+  const url = await listWithFile.getFileUrl();
+  
+  assertEquals(url, "https://workflowy.com/original-url");
+  assertEquals(calledWith, {
+    userId: 0, // from mock initialization data
+    nodeId: "b1c2d3e4-f5a6-7890-abcd-ef1234567890",
+  });
+});
+
+Deno.test("WorkFlowy Document / getPreviewUrl uses default dimensions", async () => {
+  let calledWith: { maxWidth: number; maxHeight: number } | undefined;
+  
+  const mockClientWithFileMethods = () => ({
+    getFilePreviewUrl: (_userId: number | string, _nodeId: string, maxWidth: number, maxHeight: number) => {
+      calledWith = { maxWidth, maxHeight };
+      return Promise.resolve("https://workflowy.com/preview-url");
+    },
+    getOriginalFileUrl: () => Promise.resolve(""),
+  } as unknown as Client);
+  
+  const document = new Document(
+    mockClientWithFileMethods(),
+    mockTree(),
+    mockInitialization(),
+  );
+  
+  const listWithFile = document.getList("b1c2d3e4-f5a6-7890-abcd-ef1234567890");
+  await listWithFile.getPreviewUrl(); // no arguments
+  
+  assertEquals(calledWith, {
+    maxWidth: 800,
+    maxHeight: 800,
+  });
 });

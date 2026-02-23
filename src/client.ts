@@ -236,25 +236,44 @@ export class Client {
   }
 
   /**
-   * Fetches a signed URL for a file attachment
+   * Fetches a signed URL for a file attachment preview
+   * Internal use only - prefer using List.getPreviewUrl() instead
    * 
    * Queries `workflowy.com/file-proxy/signed-preview/` endpoint
    * @param userId The user ID
    * @param nodeId The node ID containing the file
    * @param maxWidth Maximum width for image preview (default: 800)
    * @param maxHeight Maximum height for image preview (default: 800)
-   * @returns Object containing the signed URL for the file
+   * @returns The signed URL string for the file preview
    */
-  public async getFileUrl(
+  public async getFilePreviewUrl(
     userId: number | string,
     nodeId: string,
     maxWidth: number = 800,
     maxHeight: number = 800,
-  ): Promise<{ url: string }> {
+  ): Promise<string> {
     const dimensions = `${maxWidth}x${maxHeight}`;
     const url = `${WORKFLOWY_URL}/file-proxy/signed-preview/${userId}/${nodeId}/${dimensions}/?attempt=1`;
     const response = await this.#authenticatedFetch(url);
-    return response as { url: string };
+    return (response as { url: string }).url;
+  }
+
+  /**
+   * Fetches a signed URL for downloading the original file
+   * Internal use only - prefer using List.getFileUrl() instead
+   * 
+   * Queries `workflowy.com/file-proxy/signed-original/` endpoint
+   * @param userId The user ID
+   * @param nodeId The node ID containing the file
+   * @returns The signed URL string for the original file
+   */
+  public async getOriginalFileUrl(
+    userId: number | string,
+    nodeId: string,
+  ): Promise<string> {
+    const url = `${WORKFLOWY_URL}/file-proxy/signed-original/${userId}/${nodeId}/?attempt=1`;
+    const response = await this.#authenticatedFetch(url);
+    return (response as { url: string }).url;
   }
 
   /**

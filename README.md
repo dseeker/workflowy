@@ -53,7 +53,8 @@ myList.name; // name of the list
 myList.note; // note of the list
 myList.isCompleted; // whether or not the list or item is completed
 myList.items; // items and sublists
-myList.s3File; // file attachment metadata (if present)
+myList.file; // file attachment metadata (if present)
+myList.hasFile; // true if a file is attached
 ```
 
 ### Editing lists
@@ -78,42 +79,39 @@ if (document.isDirty()) {
 
 ### Working with file attachments
 
-WorkFlowy supports attaching files and images to lists. The `s3File` property
+WorkFlowy supports attaching files and images to lists. The `file` property
 provides metadata about attached files:
 
 ```typescript
 // Check if a list has a file attachment
-if (myList.s3File) {
-  console.log(myList.s3File.fileName);    // Original filename
-  console.log(myList.s3File.fileType);    // MIME type (e.g., "image/png")
-  console.log(myList.s3File.isFile);      // true if a file is attached
+if (myList.hasFile) {
+  console.log(myList.file.fileName);    // Original filename
+  console.log(myList.file.fileType);    // MIME type (e.g., "image/png")
   
   // For images, dimensions are available
-  console.log(myList.s3File.imageOriginalWidth);
-  console.log(myList.s3File.imageOriginalHeight);
+  console.log(myList.file.imageOriginalWidth);
+  console.log(myList.file.imageOriginalHeight);
 }
 ```
 
 ### Downloading file attachments
 
-To download a file attachment, use the `getFileUrl()` method on the client:
+To download a file attachment, use the `getFileUrl()` or `getPreviewUrl()` methods on the list:
 
 ```typescript
 const workflowy = new WorkFlowy("your@email.com", "your-password");
 const document = await workflowy.getDocument();
-const client = workflowy.getClient();
-
-// Get initialization data to obtain userId
-const initData = await client.getInitializationData();
-const userId = initData.mainProjectTreeInfo.ownerId;
 
 // Find a list with a file attachment
 const listWithFile = document.findOne(/some pattern/);
 
-if (listWithFile?.s3File) {
-  // Get a signed URL for the file
-  // Parameters: userId, nodeId, maxWidth, maxHeight
-  const { url } = await client.getFileUrl(userId, listWithFile.id, 800, 800);
+if (listWithFile?.hasFile) {
+  // Get a signed URL for the original file
+  const url = await listWithFile.getFileUrl();
+  
+  // Or get a signed URL for a preview (resized image)
+  // Parameters: maxWidth, maxHeight (default: 800x800)
+  const previewUrl = await listWithFile.getPreviewUrl(800, 800);
   
   // Download the file
   const response = await fetch(url);
@@ -124,10 +122,9 @@ if (listWithFile?.s3File) {
 }
 ```
 
-**Note:** The `getFileUrl()` method requires:
-- `userId`: Your WorkFlowy user ID (from initialization data)
-- `nodeId`: The ID of the list containing the file
-- `maxWidth` / `maxHeight`: Optional dimensions for image previews (default: 800x800)
+**Note:** 
+- `getFileUrl()` returns a URL to download the original file
+- `getPreviewUrl(maxWidth, maxHeight)` returns a URL to a resized preview (for images)
 
 ## Installation
 
